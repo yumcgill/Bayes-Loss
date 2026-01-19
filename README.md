@@ -11,20 +11,20 @@ The ```Validity check/``` folder contains code for calibration experiments for c
 The ```Calibration/``` folder contains code for calibration experiments for quantile regression in Section 3.4
 
 ## Example 1
-Implements Example 1 in Section 6.1.
+The ```Example 1/``` folder contains code for implementing Example 1 in Section 6.1.
 
  + Simulates data under the Example 1 data-generating process.
  + Computes posterior distributions using the proposed Bayesian loss function.
 
 ## Example 2
-Implements Example 1 in Section 6.2.
+The ```Example 2/``` folder contains code for implementing Example 1 in Section 6.2.
 
  + Simulates data under the Example 2 data-generating process.
  + Computes posterior distributions under high-dimensional confounding..
 
 
 ## Example 3
-Implements Example 1 in Section 6.3.
+The ```Example 3/``` folder contains code for implementing Example 1 in Section 6.3.
 
  + Simulates data under the Example 3 data-generating process.
  + Compares the proposed method with flexible modeling approaches.
