@@ -1,6 +1,6 @@
-This repository contains the R code used to implement the simulation studies in the paper:https://arxiv.org/abs/2103.04086
+This repository contains the R code used to implement the simulation studies in the paper:
 
-[**Non-parametric Bayesian inference via loss functions under model misspecification **](https://arxiv.org/abs/2103.04086)  by Yu Luo, David A. Stephens, Daniel J. Graham, Emma J. McCoy
+[**Non-parametric Bayesian inference via loss functions under model misspecification**](https://arxiv.org/abs/2103.04086)  by Yu Luo, David A. Stephens, Daniel J. Graham, Emma J. McCoy
 
 The code is organized by simulation studies corresponding to the examples presented in the paper, together with additional experiments assessing the validity and calibration of the Gibbs posterior.
 
