@@ -54,9 +54,9 @@ SI_dp<-function(seed,N){
         pred<-c(pred,pred[ind])
       }
     }
-    
-    
-    mod<-lm(Y~ D+x1+x2+x4+ps,data=datasetnew[-c(1:N),])
+  
+    ps_dp <- glm(D ~ u1+x2+x3,data= datasetnew[-c(1:N),], family = binomial(link = "logit"))$fitted.values
+    mod<-lm(Y~ D+x1+x2+x4+ps_dp,data=datasetnew[-c(1:N),])
     post_theta1<-c(post_theta1,mod$coefficients[2])
   }
   post_theta1 = post_theta1[!is.na(post_theta1)]
@@ -140,8 +140,8 @@ SII_dp<-function(seed,N){
       }
     }
     
-    
-    mod<-lm(Y~ D+u1+x2+x4+ps,data=datasetnew[-c(1:N),])
+    ps_dp <- glm(D ~ x1+x2+x3,data= datasetnew[-c(1:N),], family = binomial(link = "logit"))$fitted.values
+    mod<-lm(Y~ D+u1+x2+x4+ps_dp,data=datasetnew[-c(1:N),])
     post_theta1<-c(post_theta1,mod$coefficients[2])
   }
   post_theta1 = post_theta1[!is.na(post_theta1)]
@@ -231,8 +231,8 @@ SIII_dp<-function(seed,N){
       }
     }
     
-    
-    mod<-lm(Y~ D+x1+x2+x4+ps,data=datasetnew[-c(1:N),])
+    ps_dp <- glm(D ~ x1+x2+x3, data= datasetnew[-c(1:N),], family = binomial(link = "logit"))$fitted.values
+    mod<-lm(Y~ D+x1+x2+x4+ps_dp,data=datasetnew[-c(1:N),])
     post_theta1<-c(post_theta1,mod$coefficients[2])
   }
   post_theta1 = post_theta1[!is.na(post_theta1)]
