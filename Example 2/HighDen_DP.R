@@ -54,7 +54,7 @@ high_DP<-function(seed,n){
     
     w<-stick.breaking(al+n,Nv)
     
-    cv_model <- cv.glmnet(xnew, dnew, alpha = 1, family = "binomial")
+    cv_model <- cv.glmnet(xnew, dnew, alpha = 1, family = "binomial",weights=w)
     resamp.data$ps_est<-predict(cv_model,s="lambda.min", newx = xnew,type="response")
     mod <- lm( y ~ d+ps_est, weights = w, data=resamp.data)
     
