@@ -33,7 +33,7 @@ SI_dp<-function(seed,N){
   
   ps <- glm.fit(PS_pred,D,family = binomial(link = "logit"))$fitted.values
   
-  dataset<-data.frame(cbind(Y,D,x1,x2,x4,ps))
+  dataset<-data.frame(cbind(Y,D,u1,x1,x2,x3,x4,ps))
   post_theta1<-NULL
   for (i in 1:1000){
     u<-runif(1000)
@@ -46,8 +46,7 @@ SI_dp<-function(seed,N){
         datasetnew<-rbind(datasetnew,datasetnew[ind,])
         pred<-c(pred,pred[ind])
       }else{
-        w<-as.vector(rdirichlet(1,rep(1,(N+nv-1))))
-        ind<-sample(1:(N+nv-1),prob=w,size=1)
+        ind<-sample(1:(N+nv-1),size=1)
         newdata<-datasetnew[ind,]
         newdata[1]<-rnorm(1,pred[ind],1)
         datasetnew<-rbind(datasetnew,newdata)
@@ -118,7 +117,7 @@ SII_dp<-function(seed,N){
   
   ps <- glm.fit(PS_pred,D,family = binomial(link = "logit"))$fitted.values
   
-  dataset<-data.frame(cbind(Y,D,u1,x2,x4,ps))
+  dataset<-data.frame(cbind(Y,D,u1,x1,x2,x3,x4,ps))
   post_theta1<-NULL
   for (i in 1:1000){
     u<-runif(1000)
@@ -131,8 +130,7 @@ SII_dp<-function(seed,N){
         datasetnew<-rbind(datasetnew,datasetnew[ind,])
         pred<-c(pred,pred[ind])
       }else{
-        w<-as.vector(rdirichlet(1,rep(1,(N+nv-1))))
-        ind<-sample(1:(N+nv-1),prob=w,size=1)
+        ind<-sample(1:(N+nv-1),size=1)
         newdata<-datasetnew[ind,]
         newdata[1]<-rnorm(1,pred[ind],1)
         datasetnew<-rbind(datasetnew,newdata)
@@ -177,7 +175,6 @@ coverge_drdp_500<-sum(unlist(mclapply(SenarioI_res_drdp_500, '[[', "ci")))/1000
 SIII_dp<-function(seed,N){
   set.seed(seed)
   # First generate covariates X, D
-  #N=20
   mu_x<-0
   sigma_x<-1
   x1<-rnorm(n=N,mean=mu_x,sd=sigma_x)
@@ -201,15 +198,9 @@ SIII_dp<-function(seed,N){
   Y<-rnorm(N,mean=linp,sd=sigma_y)
   
   PS_pred <- model.matrix( ~ x1+x2+x3)
-  
-  #PS_lin<-glm.fit(PS_pred,D,family = binomial(link = "logit"))$linear.predictors
   ps <- glm.fit(PS_pred,D,family = binomial(link = "logit"))$fitted.values
-  #inv_logit<-function(x){exp(x)/(1+exp(x))}
   
-  #ps = inv_logit(PS_lin)
-  
-  #OR_pred <- model.matrix( ~ D+x1+x2+x4+ps)
-  dataset<-data.frame(cbind(Y,D,x1,x2,x4,ps))
+  dataset<-data.frame(cbind(Y,D,u1,x1,x2,x3,x4,ps))
   post_theta1<-NULL
   for (i in 1:1000){
     u<-runif(1000)
@@ -222,8 +213,7 @@ SIII_dp<-function(seed,N){
         datasetnew<-rbind(datasetnew,datasetnew[ind,])
         pred<-c(pred,pred[ind])
       }else{
-        w<-as.vector(rdirichlet(1,rep(1,(N+nv-1))))
-        ind<-sample(1:(N+nv-1),prob=w,size=1)
+        ind<-sample(1:(N+nv-1),size=1)
         newdata<-datasetnew[ind,]
         newdata[1]<-rnorm(1,pred[ind],1)
         datasetnew<-rbind(datasetnew,newdata)

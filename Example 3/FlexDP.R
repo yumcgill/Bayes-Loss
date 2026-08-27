@@ -44,27 +44,28 @@ DP_flex<-function(seed,N){
   
   for (i in 1:1000){ 
     
+    resamp.data<-sim.data
     ps <- glm(D~x1+x2+x3+x4,data=sim.data,family = binomial(link = "logit"))$fitted.values
-    pred<-predict(lm(Y ~ D+I(D*x1)+ps+I(ps*x1)))
-    u<-runif(Nv)
-    datasetnew<-sim.data
+    resamp.data$pred<-predict(lm(Y ~ D+I(D*x1)+ps+I(ps*x1)))
     
-    for(nv in 1:Nv){
-      if(u[nv] > al/(al+N)){
-        ind<-sample(1:(N),size=1)
-        datasetnew<-rbind(datasetnew,sim.data[ind,])
-        #pred<-c(pred,pred[ind])
-      }else{
-        ind<-sample(1:(N),size=1)
-        newdata<-sim.data[ind,]
-        newdata[1]<-rnorm(1,pred[ind],1)
-        datasetnew<-rbind(datasetnew,newdata)
-        #pred<-c(pred,pred[ind])
-      }
-    }  
     
-    resamp.data<-datasetnew[-c(1:N),]
+    for (nv in 1:Nv) {
+      n.current <- nrow(resamp.data)
+      ind <- sample(seq_len(n.current),size = 1,replace = FALSE)
+      resamp.data <- rbind(resamp.data,resamp.data[ind, ])
+    }
+    
+    resamp.data <- resamp.data[(nrow(sim.data) + 1):nrow(resamp.data),]
+    resamp.data$u<-runif(Nv)
+    
+    res_ind<-which(resamp.data$u< al/(al+N))
+    
+    if(length(res_ind) > 0 ){
+      resamp.data[res_ind,]$Y <- rnorm(length(res_ind),resamp.data$pred[res_ind],1)
+    }
+    
     w<-stick.breaking(al+N,Nv)
+    
     resamp.data$ps <-glm(D ~ x1+x2+x3+x4,data=resamp.data,family = binomial(link = "logit"),weights =w)$fitted.values
     
     data.alltrt <- resamp.data

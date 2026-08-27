@@ -1,6 +1,7 @@
 library(gtools)
 library(parallel)
 options(mc.cores = 22)
+set.seed(12)
 ### Misspecified both OR and PS models
 ### alpha = 0
 BB_Valid_misboth<-function(seed,N,sigma_out){
@@ -84,22 +85,30 @@ GP_Valid_misboth<-function(seed,N,al,sigma_out){
   sim.data<-data.frame(x1=x1,x2=x2,x3=x3,x4=x4,u1=u1,D=as.integer(D),Y=Y)
   
   post_theta1<-NULL
-  Nv<-1000
+  Nv<-N
   ps <- glm(D ~ x1+x2+x3,data=sim.data,family = binomial(link = "logit"))$fitted.values
   pred<-predict(lm(Y ~ D+ps))
   sim.data$pred<-pred
   
   for (i in 1:1000){ 
     
-    #datasetnew<-sim.data
-    ind<-sample(1:(N),size=Nv,replace = TRUE)
-    newdata<-sim.data[ind,]
-    newdata$u<-runif(Nv)
-    res_ind<-which(newdata$u<al/(al+N))
-    newdata[res_ind,]$Y<-rnorm(length(res_ind),newdata[res_ind,]$pred,1) 
+    resamp.data<-sim.data
     
+    for (nv in 1:Nv) {
+      n.current <- nrow(resamp.data)
+      ind <- sample(seq_len(n.current),size = 1,replace = FALSE)
+      resamp.data <- rbind(resamp.data,resamp.data[ind, ])
+    }
     
-    resamp.data<-newdata
+    resamp.data <- resamp.data[(nrow(sim.data) + 1):nrow(resamp.data),]
+    resamp.data$u<-runif(Nv)
+    
+    res_ind<-which(resamp.data$u< al/(al+N))
+    
+    if(length(res_ind) > 0 ){
+      resamp.data[res_ind,]$Y <- rnorm(length(res_ind),resamp.data[res_ind,]$pred,1) 
+    }
+    
     w<-stick.breaking(al+N,Nv)
     resamp.data$ps <-glm(D ~ x1+x2+x3,data=resamp.data,family = binomial(link = "logit"),weights =w)$fitted.values
     

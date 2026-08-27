@@ -7,9 +7,6 @@ The code is organized by simulation studies corresponding to the examples presen
 ## Validity check
 The ```Validity check/``` folder contains code for calibration experiments for checking the validity of the proposed generalized Bayesian loss-based method, corresponding to Section 3.3 in the paper.
 
-## Calibration
-The ```Calibration/``` folder contains code for calibration experiments for quantile regression in Section 3.4
-
 ## Example 1
 The ```Example 1/``` folder contains code for implementing Example 1 in Section 6.1.
 

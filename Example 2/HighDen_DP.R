@@ -40,19 +40,26 @@ high_DP<-function(seed,n){
   
   for (i in 1:1000){
     
-
-    ind<-sample(1:(n),size=Nv,replace = TRUE)
-    newdata<-sim.data[ind,]
-    newdata$u<-runif(Nv)
-    res_ind<-which(newdata$u< al/(al+n))
-    newdata[res_ind,]$y<-rnorm(length(res_ind),newdata[res_ind,]$pred,1)
+    resamp.data <- sim.data
     
-    resamp.data<-newdata
-    xnew = as.matrix(resamp.data[,-c(212:215)])
-    dnew = resamp.data$d
+    for (nv in 1:Nv) {
+      n.current <- nrow(resamp.data)
+      ind <- sample(seq_len(n.current),size = 1,replace = FALSE)
+      resamp.data <- rbind(resamp.data,resamp.data[ind, ])
+    }
     
+    resamp.data <- resamp.data[(nrow(sim.data) + 1):nrow(resamp.data),]
+    resamp.data$u<-runif(Nv)
+    res_ind<-which(resamp.data$u< al/(al+n))
+    
+    if(length(res_ind) > 0 ){
+      resamp.data[res_ind,]$y<-rnorm(length(res_ind),resamp.data[res_ind,]$pred,1)
+    }
     
     w<-stick.breaking(al+n,Nv)
+    xnew <- as.matrix(resamp.data[, -c(211:214)])
+    dnew <- resamp.data$d
+    
     
     cv_model <- cv.glmnet(xnew, dnew, alpha = 1, family = "binomial",weights=w)
     resamp.data$ps_est<-predict(cv_model,s="lambda.min", newx = xnew,type="response")
@@ -64,7 +71,7 @@ high_DP<-function(seed,n){
   } 
   ena_time<- Sys.time()
   run_time <- ena_time - start_time
-  postmean_theta1<-mean(post_theta1)
+  postmean_theta1<-median(post_theta1)
   
   ci<-0 
   
