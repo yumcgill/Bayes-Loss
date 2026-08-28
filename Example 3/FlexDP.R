@@ -1,5 +1,6 @@
 library(gtools)
 library(parallel)
+set.seed(2324)
 options(mc.cores = 23)
 stick.breaking<-function(av,Nv=1000){
   u<-rbeta(Nv,1,av)	
@@ -35,7 +36,8 @@ DP_flex<-function(seed,N){
   Y<-rnorm(N,mean=linp,sd=sigma_y)
   sim.data<-data.frame(x1=x1,x2=x2,x3=x3,x4=x4,D=as.integer(D),Y=Y)
   
-  
+  ps <- glm(D~x1+x2+x3+x4,data=sim.data,family = binomial(link = "logit"))$fitted.values
+  sim.data$pred<-predict(lm(Y ~ D+I(D*x1)+ps+I(ps*x1)))
   
   
   
@@ -44,36 +46,31 @@ DP_flex<-function(seed,N){
   
   for (i in 1:1000){ 
     
-    resamp.data<-sim.data
-    ps <- glm(D~x1+x2+x3+x4,data=sim.data,family = binomial(link = "logit"))$fitted.values
-    resamp.data$pred<-predict(lm(Y ~ D+I(D*x1)+ps+I(ps*x1)))
-    
-    
-    for (nv in 1:Nv) {
-      n.current <- nrow(resamp.data)
-      ind <- sample(seq_len(n.current),size = 1,replace = FALSE)
-      resamp.data <- rbind(resamp.data,resamp.data[ind, ])
+    datasetnew<-sim.data
+    u<-runif(Nv)
+    for(nv in 1:Nv){
+      if(u[nv] > al/(al+N+nv-1)){
+        ind<-sample(1:(N+nv-1),size=1)
+        datasetnew<-rbind(datasetnew,datasetnew[ind,])
+      }else{
+        ind<-sample(1:(N+nv-1),size=1)
+        newdata<-datasetnew[ind,]
+        newdata$Y<-rnorm(1,newdata$pred,1)
+        datasetnew<-rbind(datasetnew,newdata)
+      }
     }
     
-    resamp.data <- resamp.data[(nrow(sim.data) + 1):nrow(resamp.data),]
-    resamp.data$u<-runif(Nv)
     
-    res_ind<-which(resamp.data$u< al/(al+N))
+    resamp.data <- datasetnew[-c(1:N),]
     
-    if(length(res_ind) > 0 ){
-      resamp.data[res_ind,]$Y <- rnorm(length(res_ind),resamp.data$pred[res_ind],1)
-    }
-    
-    w<-stick.breaking(al+N,Nv)
-    
-    resamp.data$ps <-glm(D ~ x1+x2+x3+x4,data=resamp.data,family = binomial(link = "logit"),weights =w)$fitted.values
+    resamp.data$ps <-glm(D ~ x1+x2+x3+x4,data=resamp.data,family = binomial(link = "logit"))$fitted.values
     
     data.alltrt <- resamp.data
     data.alltrt$D <- 1
     data.nontrt <- resamp.data
     data.nontrt$D <- 0
     
-    mod1.lmX <- lm(Y ~ D+I(D*x1)+ps+I(ps*x1),weights=w,data=resamp.data)
+    mod1.lmX <- lm(Y ~ D+I(D*x1)+ps+I(ps*x1),data=resamp.data)
     
     APO.lmX.1 <- mean(predict(mod1.lmX,data.alltrt))
     APO.lmX.0 <- mean(predict(mod1.lmX,data.nontrt))
@@ -81,7 +78,6 @@ DP_flex<-function(seed,N){
   }
   
   postmean_theta1<-mean(post_theta1)
-  #var_theta1<-var(post_theta1)
   ci<-0 
   if(quantile(post_theta1,prob=c(0.025))<3 && quantile(post_theta1,prob=c(0.975))>3) {ci<-1}
   return(list(theta=postmean_theta1,ci=ci))

@@ -1,6 +1,7 @@
 library(parallel)
 options(mc.cores = 23) 
 library(gtools)
+set.seed(213)
 
 SI_dp<-function(seed,N){
   set.seed(seed)

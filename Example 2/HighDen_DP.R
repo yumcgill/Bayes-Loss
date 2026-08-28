@@ -31,8 +31,8 @@ high_DP<-function(seed,n){
   sim.data<-data.frame(x=x_int,d=as.integer(d),y=y)
   Nv<-100
   ps <- glm(d ~ x[,1]+x[,2]+x[,5]+x[,2]*x[,5]+x[,1]*x[,2],family = binomial(link = "logit"))$fitted.values
-  pred<-predict(lm(y ~ d+ps))
-  sim.data$pred<-pred
+  sim.data$pred<-predict(lm(y ~ d+ps))
+  
   
   start_time<- Sys.time()
   post_theta1<-NULL
@@ -40,30 +40,27 @@ high_DP<-function(seed,n){
   
   for (i in 1:1000){
     
-    resamp.data <- sim.data
-    
-    for (nv in 1:Nv) {
-      n.current <- nrow(resamp.data)
-      ind <- sample(seq_len(n.current),size = 1,replace = FALSE)
-      resamp.data <- rbind(resamp.data,resamp.data[ind, ])
+    datasetnew<-sim.data
+    u<-runif(Nv)
+    for(nv in 1:Nv){
+      if(u[nv] > al/(al+n+nv-1)){
+        ind<-sample(1:(n+nv-1),size=1)
+        datasetnew<-rbind(datasetnew,datasetnew[ind,])
+      }else{
+        ind<-sample(1:(n+nv-1),size=1)
+        newdata<-datasetnew[ind,]
+        newdata$y<-rnorm(1,newdata$pred,1)
+        datasetnew<-rbind(datasetnew,newdata)
+      }
     }
-    
-    resamp.data <- resamp.data[(nrow(sim.data) + 1):nrow(resamp.data),]
-    resamp.data$u<-runif(Nv)
-    res_ind<-which(resamp.data$u< al/(al+n))
-    
-    if(length(res_ind) > 0 ){
-      resamp.data[res_ind,]$y<-rnorm(length(res_ind),resamp.data[res_ind,]$pred,1)
-    }
-    
-    w<-stick.breaking(al+n,Nv)
-    xnew <- as.matrix(resamp.data[, -c(211:214)])
+    resamp.data <- datasetnew[-c(1:n),]
+    xnew <- as.matrix(resamp.data[, -c(211:213)])
     dnew <- resamp.data$d
     
     
-    cv_model <- cv.glmnet(xnew, dnew, alpha = 1, family = "binomial",weights=w)
+    cv_model <- cv.glmnet(xnew, dnew, alpha= 1, family = "binomial", type.measure = "auc")
     resamp.data$ps_est<-predict(cv_model,s="lambda.min", newx = xnew,type="response")
-    mod <- lm( y ~ d+ps_est, weights = w, data=resamp.data)
+    mod <- lm( y ~ d+ps_est, data=resamp.data)
     
     post_theta1<-c(post_theta1,mod$coefficients[2])
     

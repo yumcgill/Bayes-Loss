@@ -85,34 +85,30 @@ GP_Valid_misboth<-function(seed,N,al,sigma_out){
   sim.data<-data.frame(x1=x1,x2=x2,x3=x3,x4=x4,u1=u1,D=as.integer(D),Y=Y)
   
   post_theta1<-NULL
-  Nv<-N
+  Nv<-4*N
   ps <- glm(D ~ x1+x2+x3,data=sim.data,family = binomial(link = "logit"))$fitted.values
-  pred<-predict(lm(Y ~ D+ps))
-  sim.data$pred<-pred
+  sim.data$pred<-predict(lm(Y ~ D+ps))
   
   for (i in 1:1000){ 
     
-    resamp.data<-sim.data
-    
-    for (nv in 1:Nv) {
-      n.current <- nrow(resamp.data)
-      ind <- sample(seq_len(n.current),size = 1,replace = FALSE)
-      resamp.data <- rbind(resamp.data,resamp.data[ind, ])
+    datasetnew<-sim.data
+    u<-runif(Nv)
+    for(nv in 1:Nv){
+      if(u[nv] > al/(al+N+nv-1)){
+        ind<-sample(1:(N+nv-1),size=1)
+        datasetnew<-rbind(datasetnew,datasetnew[ind,])
+      }else{
+        ind<-sample(1:(N+nv-1),size=1)
+        newdata<-datasetnew[ind,]
+        newdata$Y<-rnorm(1,newdata$pred,1)
+        datasetnew<-rbind(datasetnew,newdata)
+      }
     }
+    resamp.data <- datasetnew[-c(1:N),]
     
-    resamp.data <- resamp.data[(nrow(sim.data) + 1):nrow(resamp.data),]
-    resamp.data$u<-runif(Nv)
+    resamp.data$ps <-glm(D ~ x1+x2+x3,data=resamp.data,family = binomial(link = "logit"))$fitted.values
     
-    res_ind<-which(resamp.data$u< al/(al+N))
-    
-    if(length(res_ind) > 0 ){
-      resamp.data[res_ind,]$Y <- rnorm(length(res_ind),resamp.data[res_ind,]$pred,1) 
-    }
-    
-    w<-stick.breaking(al+N,Nv)
-    resamp.data$ps <-glm(D ~ x1+x2+x3,data=resamp.data,family = binomial(link = "logit"),weights =w)$fitted.values
-    
-    mod <- lm( Y ~ D+ps, weights = w, data=resamp.data)
+    mod <- lm( Y ~ D+ps, data=resamp.data)
     
     post_theta1<-c(post_theta1,mod$coefficients[2])
     
