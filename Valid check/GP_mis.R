@@ -45,7 +45,7 @@ BB_Valid<-function(seed,N,sigma_out){
  
   ### calculate log likelihood for prior
  
-  H_stat<-length(which(post_theta1[201:2000]<beta0))/1800
+  H_stat<-length(which(post_theta1<beta0))/2000
   
   return(H_stat=H_stat)
 }
@@ -64,7 +64,7 @@ stick.breaking<-function(av,Nv){
   return(v*w)
 }
 
-GP_Valid_mis<-function(seed,N,al,sigma_out){
+GP_Valid_mis<-function(seed,N,al,Nv,sigma_out){
   set.seed(seed)
   
   mu_x<-0
@@ -93,7 +93,6 @@ GP_Valid_mis<-function(seed,N,al,sigma_out){
   sim.data<-data.frame(x1=x1,x2=x2,x3=x3,x4=x4,u1=u1,D=as.integer(D),Y=Y)
   
   post_theta1<-NULL
-  Nv<- 4*N
   ps <- glm(D ~ u1+x2+x3,data=sim.data,family = binomial(link = "logit"))$fitted.values
   sim.data$pred<-predict(lm(Y ~ D+ps))
   
@@ -130,11 +129,11 @@ GP_Valid_mis<-function(seed,N,al,sigma_out){
 
 ## n = 100
 ##alpha = 1
-GP_Valid_mis_1<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_mis(x,100,1,100))
+GP_Valid_mis_1<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_mis(x,100,1,2000,100))
 ##alpha = 10
-GP_Valid_mis_10<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_mis(x,100,10,100))
+GP_Valid_mis_10<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_mis(x,100,10,2000,100))
 ##alpha = 100
-GP_Valid_mis_100<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_mis(x,100,100,100))
+GP_Valid_mis_100<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_mis(x,100,100,2000,100))
 
 ks.test(unlist(GP_Valid_mis_1),punif,0,1)
 
@@ -144,11 +143,11 @@ ks.test(unlist(GP_Valid_mis_100),punif,0,1)
 
 ## n = 10000
 ##alpha = 1
-GP_Valid_mis_1_10kv1<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_mis(x,10000,1,100))
+GP_Valid_mis_1_10kv1<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_mis(x,10000,1,40000,100))
 ##alpha = 10
-GP_Valid_mis_10_10kv1<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_mis(x,10000,10,100))
+GP_Valid_mis_10_10kv1<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_mis(x,10000,10,40000,100))
 ##alpha = 100
-GP_Valid_mis_100_10kv1<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_mis(x,10000,100,100))
+GP_Valid_mis_100_10kv1<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_mis(x,10000,100,40000,100))
 
 
 ks.test(unlist(GP_Valid_mis_1_10kv1),punif,0,1)

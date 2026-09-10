@@ -56,7 +56,7 @@ ks.test(unlist(BB_Valid_misboth_10k),punif,0,1)
 
 
 
-GP_Valid_misboth<-function(seed,N,al,sigma_out){
+GP_Valid_misboth<-function(seed,N,al,Nv,sigma_out){
   set.seed(seed)
   
   mu_x<-0
@@ -85,7 +85,6 @@ GP_Valid_misboth<-function(seed,N,al,sigma_out){
   sim.data<-data.frame(x1=x1,x2=x2,x3=x3,x4=x4,u1=u1,D=as.integer(D),Y=Y)
   
   post_theta1<-NULL
-  Nv<-4*N
   ps <- glm(D ~ x1+x2+x3,data=sim.data,family = binomial(link = "logit"))$fitted.values
   sim.data$pred<-predict(lm(Y ~ D+ps))
   
@@ -120,16 +119,16 @@ GP_Valid_misboth<-function(seed,N,al,sigma_out){
   return(H_stat=H_stat)
 }
 
-GP_Valid_misboth_1<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_misboth(x,100,1,100))
-GP_Valid_misboth_10<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_misboth(x,100,10,100))
-GP_Valid_misboth_100<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_misboth(x,100,100,100))
+GP_Valid_misboth_1<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_misboth(x,100,1,2000,100))
+GP_Valid_misboth_10<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_misboth(x,100,10,2000,100))
+GP_Valid_misboth_100<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_misboth(x,100,100,2000,100))
 ks.test(unlist(GP_Valid_misboth_1),punif,0,1)
 ks.test(unlist(GP_Valid_misboth_10),punif,0,1)
 ks.test(unlist(GP_Valid_misboth_100),punif,0,1)
 
-GP_Valid_misboth_1_10k<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_misboth(x,10000,1,100))
-GP_Valid_misboth_10_10k<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_misboth(x,10000,10,100))
-GP_Valid_misboth_100_10k<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_misboth(x,10000,100,100))
+GP_Valid_misboth_1_10k<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_misboth(x,10000,1,40000,100))
+GP_Valid_misboth_10_10k<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_misboth(x,10000,10,40000,100))
+GP_Valid_misboth_100_10k<-mclapply(sample(c(1:100000000),1000),function(x) GP_Valid_misboth(x,10000,100,40000,100))
 ks.test(unlist(GP_Valid_misboth_1_10k),punif,0,1)
 ks.test(unlist(GP_Valid_misboth_10_10k),punif,0,1)
 ks.test(unlist(GP_Valid_misboth_100_10k),punif,0,1)
